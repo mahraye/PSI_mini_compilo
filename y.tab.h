@@ -106,7 +106,7 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 242 "source.y" /* yacc.c:1909  */
+#line 259 "source.y" /* yacc.c:1909  */
 int nb; char var [32];
 
 #line 113 "y.tab.h" /* yacc.c:1909  */

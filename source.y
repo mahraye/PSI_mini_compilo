@@ -18,6 +18,7 @@
     typedef struct Cellule Cellule;
     struct Cellule {
         char* nom;
+        int constante;
         Cellule* suivante;
     };
 
@@ -84,6 +85,7 @@
         }
         cellule->nom = malloc(strlen(DEBUT)+1);
         strncpy(cellule->nom, DEBUT, strlen(DEBUT));
+        cellule->constante = 0;
         cellule->suivante = NULL;
         tabSymbol->premiere = cellule;
         return tabSymbol;
@@ -102,13 +104,14 @@
     }
 
 
-    int ajoute(char* nvNom) {
+    int ajoute(char* nvNom, int constante) {
         Cellule* nouvelle = malloc(sizeof(*nouvelle));
         if (tabSymbol == NULL || nouvelle == NULL) {
             exit(EXIT_FAILURE);
         }
         nouvelle->nom = malloc(strlen(nvNom)+1);
         strncpy(nouvelle->nom, nvNom, strlen(nvNom));
+        nouvelle->constante = constante;
 
         int compteur = 0;
         Cellule* actuelle = tabSymbol->premiere;
@@ -129,13 +132,13 @@
     	    nouvelle->suivante = NULL;
     	    compteur++;  //on rajoute un element en plus
         }
-        //afficher();
+        //affiche();
         return compteur;
     }
 
 
     int trouve(char* nvNom) {
-        //afficher();
+        affiche();
         int compteur = 0;
         int arg = -1;
         Cellule* actuelle = tabSymbol->premiere;
@@ -148,26 +151,39 @@
         return arg;
     }
 
+    int constante(char* nvNom) {
+        int compteur = 0;
+        int arg = -1;
+        Cellule* actuelle = tabSymbol->premiere;
+        while (actuelle != NULL && arg < 0) {
+          if (strcmp(nvNom, actuelle->nom)==0)
+            arg = actuelle->constante;
+          compteur++;
+          actuelle = actuelle->suivante;
+        }
+        return arg;
+    }
 
-    void afficher() {
+
+    void affiche() {
         if (tabSymbol == NULL) {
             exit(EXIT_FAILURE);
         }
         Cellule* actuelle = tabSymbol->premiere;
         while (actuelle != NULL) {
-            fprintf(inputFile,"%s -> ", actuelle->nom);
+            fprintf(inputFile,"(%s, %d) -> ", actuelle->nom, actuelle->constante);
             actuelle = actuelle->suivante;
         }
         fprintf(inputFile,"NULL\n");
     }
 
-    void afficherBuffer() {
+    void afficheBuffer() {
         if (bufferSymbol == NULL) {
             exit(EXIT_FAILURE);
         }
         Cellule* actuelle = bufferSymbol->premiere;
         while (actuelle != NULL) {
-            fprintf(inputFile,"%s -> ", actuelle->nom);
+            fprintf(inputFile,"(%s, %d) -> ", actuelle->nom, actuelle->constante);
             actuelle = actuelle->suivante;
         }
         fprintf(inputFile,"NULL\n");
@@ -181,13 +197,14 @@
         }
         cellule->nom = malloc(strlen(DEBUT)+1);
         strncpy(cellule->nom, DEBUT, strlen(DEBUT));
+        cellule->constante = 0;
         cellule->suivante = NULL;
         bufferSymbol->premiere = cellule;
         return bufferSymbol;
     }
 
     void ecritBuffer(int val) {
-        afficherBuffer();
+        afficheBuffer();
         if (bufferSymbol == NULL) {
             exit(EXIT_FAILURE);
         }
@@ -200,15 +217,15 @@
         }
     }
 
-    void stocke(char* nvNom) {
-        afficherBuffer();
+    void stocke(char* nvNom, int constante) {
+        afficheBuffer();
         Cellule* nouvelle = malloc(sizeof(*nouvelle));
         if (bufferSymbol == NULL || nouvelle == NULL) {
             exit(EXIT_FAILURE);
         }
         nouvelle->nom = malloc(strlen(nvNom)+1);
         strncpy(nouvelle->nom, nvNom, strlen(nvNom));
-
+        nouvelle->constante = constante;
         Cellule* actuelle = bufferSymbol->premiere;
         int found = 0;
         while (!found && actuelle->suivante != NULL) {
@@ -271,12 +288,12 @@ LVARS:
 
 DECLARATION:
 
-    |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2); }
-    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3); }
-    |   TYPE tVAR tEQ VAL tPTvirg DECLARATION    { ajoute($2); write_instruction2(COD_AFC,trouve($2),$4); }
+    |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2,0); }
+    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3,1); }
+    |   TYPE tVAR tEQ VAL tPTvirg DECLARATION    { ajoute($2,0); write_instruction2(COD_AFC,trouve($2),$4); }
     ;
-    //|    ASSIGNATION DECLARATION
-    //;
+  //  |    ASSIGNATION DECLARATION
+  //  ;
 
 /*DECLARATIONS:
 
@@ -288,20 +305,20 @@ DECLARATION:
     | SANSASSIGNATION
     ;
 SANSASSIGNATION:
-    |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2); }
-    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3); }
+    |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2,0); }
+    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3,1); }
     ;
 
 AVECASSIGNATION: TYPE DVARS tEQ VAL tPTvirg { ecritBuffer($4); };
 
 DVARS:
-    tVAR                      { ajoute($1); stocke($1); }
-    | tVAR tVIRG DVARS        { ajoute($1); stocke($1); }
+    tVAR                      { ajoute($1); stocke($1,0); }
+    | tVAR tVIRG DVARS        { ajoute($1); stocke($1,0); }
     ;*/
 
 INSTRUCT:
 
-    |   tVAR tEQ EXPRESSION tPTvirg INSTRUCT             { write_instruction2(COD_COP,trouve($1),$3); depile_tmp(); }
+    |   tVAR tEQ EXPRESSION tPTvirg INSTRUCT             { if(!constante($1)){write_instruction2(COD_COP,trouve($1),$3); depile_tmp();}  } /*si constante on change pas*/
     |   tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT
     |   PRINT INSTRUCT
     ;
@@ -346,20 +363,20 @@ int main(){
 
     /*printf("ajoute titi: %d\n",ajoute( "titi"));
     printf("trouve titi: %d\n",trouve( "titi"));
-    afficher(tabSymbol);
+    affiche(tabSymbol);
     printf("ajoute totodu31: %d\n",ajoute( "totodu31"));
     printf("trouve titi: %d\n",trouve( "titi"));
     printf("trouve totodu31: %d\n",trouve( "totodu31"));
-    afficher(tabSymbol);
+    affiche(tabSymbol);
     printf("ajoute totodu31400: %d\n",ajoute( "totodu31400"));
     printf("trouve totodu31400: %d\n",trouve( "totodu31400"));
-    afficher(tabSymbol);
+    affiche(tabSymbol);
     printf("ajoute totodu31: %d\n",ajoute( "totodu31"));
     printf("trouve totodu31: %d\n",trouve( "totodu31"));
-    afficher(tabSymbol);
+    affiche(tabSymbol);
     printf("ajoute totodu31400: %d\n",ajoute( "totodu31400"));
     printf("trouve totodu31400: %d\n",trouve( "totodu31400"));
-    afficher(tabSymbol);
+    affiche(tabSymbol);
     supprime(tabSymbol);*/
 
     yyparse();
