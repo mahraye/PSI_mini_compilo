@@ -1,4 +1,4 @@
-int main(){ 
+int main(){
     int i, j,k,r;
     i =-5;j=4;
     k=8-3;
@@ -9,3 +9,17 @@ int main(){
     r=(i+j)*(i+k/j);
     printf ( r );
 }
+/*
+int main(){
+      int j=2;
+      int i=1;
+      int k=5;
+      int r;
+      r=(i+j)*(i+k/j);
+}*/
+
+/*int main(){
+      int j=2;
+      int r;
+      r=(j+j)*(j+j/j);
+}*/

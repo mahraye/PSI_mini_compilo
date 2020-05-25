@@ -1,6 +1,21 @@
-INT
-INT
-6 0 2
-1 0 0 0
-6 0 0
+<debut> -> r -> NULL
+<debut> -> r -> j -> NULL
+<debut> -> r -> j -> NULL
+6 2 2
+<debut> -> r -> j -> NULL
+5 1023 2
+<debut> -> r -> j -> NULL
+5 1022 2
+1 1023 1023 1022
+<debut> -> r -> j -> NULL
+5 1022 2
+<debut> -> r -> j -> NULL
+5 1021 2
+<debut> -> r -> j -> NULL
+5 1020 2
+4 1021 1021 1020
+1 1022 1022 1021
+2 1023 1023 1022
+<debut> -> r -> j -> NULL
+5 1 1023
 main

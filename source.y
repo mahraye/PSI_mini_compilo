@@ -2,7 +2,10 @@
     #include <stdlib.h>
     #include <stdio.h>
     #include <string.h>
+    //#include "tabSymbol.h"
     #define SIZE 1024
+    #define DEBUT "<debut>"
+
 
     int yydebug=1;
     extern int yylex();
@@ -11,15 +14,24 @@
         printf("%s\n",s);
     }
 
-    struct symbol{
-      char * name;        // nom de la variable
-      int constant;       // boolean
-      float value;        // valeut des var tmp
+
+    typedef struct Cellule Cellule;
+    struct Cellule {
+        char* nom;
+        Cellule* suivante;
     };
 
+    typedef struct Liste Liste;
+    struct Liste {
+        Cellule* premiere;
+    };
+
+
+
+    Liste* tabSymbol;
     FILE * inputFile;
     int index_pile = 0;
-    struct symbol table[SIZE];
+
 
     int COD_ADD = 1;
     int COD_SUB = 3;
@@ -28,42 +40,101 @@
     int COD_COP = 5;
     int COD_AFC = 6;
 
-    void malloc_easy(void){
-        for(int j=0;j<SIZE;j++){
-            struct symbol ini_symbol =
-                {"null/!!/20caracteres", 1, 1.0};
-            table[j]=ini_symbol;
+    Liste* initialise() {
+        tabSymbol = malloc(sizeof(Liste));
+        Cellule* cellule = malloc(sizeof(Cellule));
+        if (tabSymbol == NULL || cellule == NULL)  {
+            exit(EXIT_FAILURE);
+        }
+        cellule->nom = malloc(strlen(DEBUT)+1);
+        strncpy(cellule->nom, DEBUT, strlen(DEBUT));
+        cellule->suivante = NULL;
+        tabSymbol->premiere = cellule;
+        return tabSymbol;
+    }
+
+
+    void supprime(Liste* tabSymbol) {
+        if (tabSymbol == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        if (tabSymbol->premiere != NULL)
+        {
+            Cellule* bientotPlusLa = tabSymbol->premiere;
+            tabSymbol->premiere = tabSymbol->premiere->suivante;
+            free(bientotPlusLa);
         }
     }
 
-    int find_symbol(char * name){
-      int i = 0;
-      int index = -1;
-      int found = 0;
-      while(i<SIZE & !found){
-        if (strcmp(name, table[i].name)==0){
-          index = i;
-          found = 1;
-        } else {
-          i++;
+
+    int ajouter(char* nvNom) {
+        Cellule* nouvelle = malloc(sizeof(*nouvelle));
+        if (tabSymbol == NULL || nouvelle == NULL) {
+            exit(EXIT_FAILURE);
         }
-      }
-      printf("Name trouvé : %s index : %d\n\n", name, index);
-      return index;
+        nouvelle->nom = malloc(strlen(nvNom)+1);
+        strncpy(nouvelle->nom, nvNom, strlen(nvNom));
+
+        int compteur = 0;
+        Cellule* actuelle = tabSymbol->premiere;
+        //printf("compteur ");
+        int found = 0;
+        while (!found && actuelle->suivante != NULL) {
+        	if (strcmp(nvNom, actuelle->nom)==0) {
+        		found = 1;
+        		break;
+        	}
+        	compteur++;
+            actuelle = actuelle->suivante;
+        }
+        //printf(" ; found %d\n",found);
+        // on rajoute que s'il y a besoin
+        if(!found && strcmp(nvNom, actuelle->nom)!=0) {
+    	    actuelle->suivante = nouvelle;
+    	    nouvelle->suivante = NULL;
+    	    compteur++;  //on rajoute un element en plus
+        }
+        //afficher();
+        return compteur;
     }
 
-    void add_symbol(char*name, int constant){
-      int index = find_symbol("null/!!/20caracteres");
-      table[index].name = name;
-      table[index].constant = constant;
-      for(int i=0; i<10;i++){
-        printf("valeur table: %d %s/%d\n", i, table[i].name, table[i].constant);
-      }
+
+    int trouver(char* nvNom) {
+        //afficher();
+        int compteur = 0;
+        int arg = -1;
+        Cellule* actuelle = tabSymbol->premiere;
+        while (actuelle != NULL && arg < 0) {
+        	if (strcmp(nvNom, actuelle->nom)==0)
+        		arg = compteur;
+        	compteur++;
+          actuelle = actuelle->suivante;
+        }
+        return arg;
     }
 
-    void empile_tmp(float result){
-      table[SIZE-index_pile-1].value = result;
+
+    void afficher() {
+        if (tabSymbol == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        Cellule* actuelle = tabSymbol->premiere;
+        while (actuelle != NULL) {
+            fprintf(inputFile,"%s -> ", actuelle->nom);
+            actuelle = actuelle->suivante;
+        }
+        fprintf(inputFile,"NULL\n");
+    }
+
+
+    int empile_tmp(){
       index_pile++;
+      return SIZE-index_pile; //pile virtualisee par un simple index de pile (parce qui compte c'est
+    }                         //l'adresse pas le contenu de la pile)
+
+    int depile_tmp(){
+      index_pile--;
+      return SIZE-index_pile;
     }
 
     void write_instruction1(int ope_cod, int num){
@@ -95,10 +166,10 @@
 S: MAIN;
 MAIN: TYPE tMAIN tPARo VARS tPARf tACCo BODY tACCf { fprintf(inputFile,"main"); } ;
 TYPE:
-        tINT    { fprintf(inputFile,"INT\n"); }
-    |   tFLOAT  { fprintf(inputFile,"FLOAT\n"); }
-    |   tCHAR   { fprintf(inputFile,"CHAR\n"); }
-    |   tVOID   { fprintf(inputFile,"VOID\n"); }
+        tINT
+    |   tFLOAT
+    |   tCHAR
+    |   tVOID
     ;
 BODY: DECLARATION INSTRUCT ;
 VARS:
@@ -111,32 +182,33 @@ LVARS:
     ;
 
 DECLARATION:
-        TYPE tVAR tPTvirg DECLARATION {add_symbol($2,0);}
-    |   tCONST TYPE tVAR tPTvirg DECLARATION {add_symbol($3,1);}
-    |   TYPE tVAR tEQ VAL tPTvirg DECLARATION {add_symbol($2,0); write_instruction2(COD_AFC,find_symbol($2),$4);}
-    |
+
+    |   TYPE tVAR tPTvirg DECLARATION            { ajouter($2); }
+    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajouter($3); }
+    |   TYPE tVAR tEQ VAL tPTvirg DECLARATION    { ajouter($2); write_instruction2(COD_AFC,trouver($2),$4); } /*remplacer val par expression?*/
     ;
 
 INSTRUCT:
-        tVAR tEQ EXPRESSION tPTvirg INSTRUCT          {printf("ICI\n") ;int index =find_symbol($1); write_instruction2(COD_AFC,index,$3); }
+
+    |   tVAR tEQ EXPRESSION tPTvirg INSTRUCT             { write_instruction2(COD_COP,trouver($1),$3); depile_tmp(); }
     |   tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT
-    |
     ;
 
 EXPRESSION:
-        tNB                        { $$ = 0; }
-    |   tREAL                      { $$ = 0; }
-    |   tVAR                       { $$ = find_symbol($1);}
+        tNB                        { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_AFC,addr_tmp,$1); }
+    |   tREAL                      { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_AFC,addr_tmp,3.14); } /*chantier*/
+    |   tVAR                       { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_COP,addr_tmp,trouver($1)); }
     |   tPARo EXPRESSION tPARf     { $$ = $2; }
-    |   EXPRESSION OPE EXPRESSION  { write_instruction3($2, $$, $1, $3); }
-    |   tSUB EXPRESSION %prec tMUL { write_instruction3(0, $$,  0, $2); }
+    |   EXPRESSION OPE EXPRESSION  { $$ = $1; write_instruction3($2, $1, $1, $3); depile_tmp(); } /*liberation de l'adresse*/
+    |   tSUB EXPRESSION %prec tMUL { write_instruction3(COD_SUB, $2, 0, $2); }        /*pas sur du tout : pas de depilage ?*/
     ;
 
 OPE:
-        tADD  {$$=COD_ADD;}
-    |   tSUB  {$$=COD_SUB;}
-    |   tMUL  {$$=COD_MUL;}
-    |   tDIV  {$$=COD_DIV;}
+        tADD  { $$=COD_ADD; }
+    |   tSUB  { $$=COD_SUB; }
+    |   tMUL  { $$=COD_MUL; }
+    |   tDIV  { $$=COD_DIV; }
+    ;
 
 VAL:
         tNB
@@ -147,18 +219,40 @@ VAL:
 %%
 int main(){
     printf("Début\n");
-    malloc_easy();
-    inputFile= fopen( "asm.txt", "w" );
+    Liste* tabSymbol = initialise();
+
+    inputFile = fopen( "asm.txt", "w" );
     if ( inputFile == NULL ) {
         printf( "Cannot open file %s\n", "ASM" );
         exit( 0 );
     }
+
+    /*printf("ajouter titi: %d\n",ajouter( "titi"));
+    printf("trouver titi: %d\n",trouver( "titi"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31: %d\n",ajouter( "totodu31"));
+    printf("trouver titi: %d\n",trouver( "titi"));
+    printf("trouver totodu31: %d\n",trouver( "totodu31"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31400: %d\n",ajouter( "totodu31400"));
+    printf("trouver totodu31400: %d\n",trouver( "totodu31400"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31: %d\n",ajouter( "totodu31"));
+    printf("trouver totodu31: %d\n",trouver( "totodu31"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31400: %d\n",ajouter( "totodu31400"));
+    printf("trouver totodu31400: %d\n",trouver( "totodu31400"));
+    afficher(tabSymbol);
+    supprime(tabSymbol);*/
+
     yyparse();
-    fclose( inputFile );
+    fclose(inputFile);
+
+    printf("\nmemoire libérée\n");
     printf("FIN\n");
     return 0;
 }
-
+/*
 C:
 int a = 5;
 int b = 6;
@@ -181,3 +275,35 @@ ADD @tmp2 @a @b -> 1 5 0 1
 MUL @tmp3 @tmp1 @tmp2 -> 2 4 6 5
 COP @tmp3 @a -> 5 4 0
 [a,b,c,,,]
+
+
+
+
+C:
+int a = 5;
+a = a + 8;
+
+
+NOUS:
+[a,,,,,]
+AFC @a 5 -> 6 0 5
+[a,,,,,8]
+index_pile = 1
+ADD @tmp @a @8 -> 1 5 0 6
+[a,,,,tmp,8]
+COP @tmp @a -> 5 5 0
+[a,,,,,]
+
+
+
+8 + b + c
+
+tNB tPLUS tVAR tPLUS tVAR
+
+|      |
+\_____/
+
+Sachant EXPRESSION -> tNB {actionNB}
+Alors, nous executons actionNB
+Hypothèse : pas de modif. de la pile
+*/

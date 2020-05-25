@@ -67,6 +67,10 @@
     #include <stdlib.h>
     #include <stdio.h>
     #include <string.h>
+    //#include "tabSymbol.h"
+    #define SIZE 1024
+    #define DEBUT "<debut>"
+
 
     int yydebug=1;
     extern int yylex();
@@ -75,53 +79,129 @@
         printf("%s\n",s);
     }
 
-struct symbol{
-  char * name;        // nom de la variable
-  int constant;       // boolean
-};
 
-FILE * inputFile;
-int index_pile = 0;
-struct symbol table[1024];
-int COD_ADD = 1;
-int COD_SUB = 3;
-int COD_MUL = 2;
-int COD_DIV = 4;
-int COD_COP = 5;
-int COD_AFC = 6;
+    typedef struct Cellule Cellule;
+    struct Cellule {
+        char* nom;
+        Cellule* suivante;
+    };
 
-void malloc_easy(void){
-    for(int j=0;j<1024;j++){
-        struct symbol ini_symbol =
-            {"null/!!/20caracteres", 1};
-        table[j]=ini_symbol;
+    typedef struct Liste Liste;
+    struct Liste {
+        Cellule* premiere;
+    };
+
+
+
+    Liste* tabSymbol;
+    FILE * inputFile;
+    int index_pile = 0;
+
+
+    int COD_ADD = 1;
+    int COD_SUB = 3;
+    int COD_MUL = 2;
+    int COD_DIV = 4;
+    int COD_COP = 5;
+    int COD_AFC = 6;
+
+    Liste* initialise() {
+        tabSymbol = malloc(sizeof(Liste));
+        Cellule* cellule = malloc(sizeof(Cellule));
+        if (tabSymbol == NULL || cellule == NULL)  {
+            exit(EXIT_FAILURE);
+        }
+        cellule->nom = malloc(strlen(DEBUT)+1);
+        strncpy(cellule->nom, DEBUT, strlen(DEBUT));
+        cellule->suivante = NULL;
+        tabSymbol->premiere = cellule;
+        return tabSymbol;
     }
-}
-int find_symbol(char * name){
-  
-  int i = 0;
-  int index = -1;
-  int found = 0;
-  while(i<1024 & !found){
-    if (strcmp(name, table[i].name)==0){
-      index = i;
-      found = 1;
-    } else {
-      i++;
-    }
-  }
-  printf("Name trouvé : %s index : %d\n\n", name, index);
-  return index;
-}
-void add_symbol(char*name,int constant){
-  int index = find_symbol("null/!!/20caracteres");
-  table[index].name = name;
-  table[index].constant = constant;
-  for(int i=0; i<10;i++){
-    printf("valeur table: %d %s/%d\n", i, table[i].name, table[i].constant);
 
-  }
-}
+
+    void supprime(Liste* tabSymbol) {
+        if (tabSymbol == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        if (tabSymbol->premiere != NULL)
+        {
+            Cellule* bientotPlusLa = tabSymbol->premiere;
+            tabSymbol->premiere = tabSymbol->premiere->suivante;
+            free(bientotPlusLa);
+        }
+    }
+
+
+    int ajouter(char* nvNom) {
+        Cellule* nouvelle = malloc(sizeof(*nouvelle));
+        if (tabSymbol == NULL || nouvelle == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        nouvelle->nom = malloc(strlen(nvNom)+1);
+        strncpy(nouvelle->nom, nvNom, strlen(nvNom));
+
+        int compteur = 0;
+        Cellule* actuelle = tabSymbol->premiere;
+        //printf("compteur ");
+        int found = 0;
+        while (!found && actuelle->suivante != NULL) {
+        	if (strcmp(nvNom, actuelle->nom)==0) {
+        		found = 1;
+        		break;
+        	}
+        	compteur++;
+            actuelle = actuelle->suivante;
+        }
+        //printf(" ; found %d\n",found);
+        // on rajoute que s'il y a besoin
+        if(!found && strcmp(nvNom, actuelle->nom)!=0) {
+    	    actuelle->suivante = nouvelle;
+    	    nouvelle->suivante = NULL;
+    	    compteur++;  //on rajoute un element en plus
+        }
+        afficher();
+        return compteur;
+    }
+
+
+    int trouver(char* nvNom) {
+        afficher();
+        int compteur = 0;
+        int arg = -1;
+        Cellule* actuelle = tabSymbol->premiere;
+        while (actuelle != NULL && arg < 0) {
+        	if (strcmp(nvNom, actuelle->nom)==0)
+        		arg = compteur;
+        	compteur++;
+          actuelle = actuelle->suivante;
+        }
+        return arg;
+    }
+
+
+    void afficher() {
+        if (tabSymbol == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        Cellule* actuelle = tabSymbol->premiere;
+        while (actuelle != NULL) {
+            fprintf(inputFile,"%s -> ", actuelle->nom);
+            actuelle = actuelle->suivante;
+        }
+        fprintf(inputFile,"NULL\n");
+    }
+
+
+    int empile_tmp(){
+      index_pile++;
+      return SIZE-index_pile; //pile virtualisee par un simple index de pile (parce qui compte c'est
+    }                         //l'adresse pas le contenu de la pile)
+
+    int depile_tmp(){
+      index_pile--;
+      return SIZE-index_pile;
+    }
+
     void write_instruction1(int ope_cod, int num){
       // jmp; pri
       fprintf(inputFile,"%d %d\n", ope_cod, num);
@@ -135,7 +215,8 @@ void add_symbol(char*name,int constant){
     	fprintf(inputFile,"%d %d %d %d\n", ope_cod, ret,op1, op2);
     }
 
-#line 139 "y.tab.c" /* yacc.c:339  */
+
+#line 220 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -229,10 +310,10 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 73 "source.y" /* yacc.c:355  */
+#line 154 "source.y" /* yacc.c:355  */
 int nb; char var [32];
 
-#line 236 "y.tab.c" /* yacc.c:355  */
+#line 317 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -249,7 +330,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 253 "y.tab.c" /* yacc.c:358  */
+#line 334 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -549,10 +630,10 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    85,    85,    86,    88,    89,    90,    91,    93,    94,
-      96,    98,   100,   104,   105,   106,   107,   112,   113,   114,
-     118,   119,   120,   121,   122,   123,   126,   127,   128,   129,
-     132,   133,   134
+       0,   166,   166,   167,   169,   170,   171,   172,   174,   175,
+     177,   179,   181,   184,   186,   187,   188,   191,   193,   194,
+     198,   199,   200,   201,   202,   203,   207,   208,   209,   210,
+     214,   215,   216
 };
 #endif
 
@@ -610,12 +691,12 @@ static const yytype_int8 yypact[] =
 static const yytype_uint8 yydefact[] =
 {
        0,     7,     4,     6,     5,     0,     2,     0,     1,     0,
-       9,    11,     0,     0,    10,     0,    11,    16,    12,     0,
-       0,     0,    19,     0,     0,     3,     0,     0,     8,     0,
-       0,    16,     0,     0,    16,    31,    30,    32,     0,    13,
-       0,     0,    21,    20,    22,     0,     0,    14,    16,    25,
-       0,    26,    27,    28,    29,     0,     0,    19,    15,    23,
-      19,    24,    17,    18
+       9,    11,     0,     0,    10,     0,    11,    13,    12,     0,
+       0,     0,    17,     0,     0,     3,     0,     0,     8,     0,
+       0,    13,     0,     0,    13,    31,    30,    32,     0,    14,
+       0,     0,    21,    20,    22,     0,     0,    15,    13,    25,
+       0,    26,    27,    28,    29,     0,     0,    17,    16,    23,
+      17,    24,    18,    19
 };
 
   /* YYPGOTO[NTERM-NUM].  */
@@ -683,7 +764,7 @@ static const yytype_uint8 yyr1[] =
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     1,     8,     1,     1,     1,     1,     2,     0,
-       2,     0,     3,     4,     5,     6,     0,     5,     6,     0,
+       2,     0,     3,     0,     4,     5,     6,     0,     5,     6,
        1,     1,     1,     3,     3,     2,     1,     1,     1,     1,
        1,     1,     1
 };
@@ -1362,121 +1443,97 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 86 "source.y" /* yacc.c:1646  */
+#line 167 "source.y" /* yacc.c:1646  */
     { fprintf(inputFile,"main"); }
-#line 1368 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 4:
-#line 88 "source.y" /* yacc.c:1646  */
-    { fprintf(inputFile,"INT\n"); }
-#line 1374 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 5:
-#line 89 "source.y" /* yacc.c:1646  */
-    { fprintf(inputFile,"FLOAT\n"); }
-#line 1380 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 6:
-#line 90 "source.y" /* yacc.c:1646  */
-    { fprintf(inputFile,"CHAR\n"); }
-#line 1386 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 7:
-#line 91 "source.y" /* yacc.c:1646  */
-    { fprintf(inputFile,"VOID\n"); }
-#line 1392 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 13:
-#line 104 "source.y" /* yacc.c:1646  */
-    {add_symbol((yyvsp[-2].var),0);}
-#line 1398 "y.tab.c" /* yacc.c:1646  */
+#line 1449 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 105 "source.y" /* yacc.c:1646  */
-    {add_symbol((yyvsp[-2].var),1);}
-#line 1404 "y.tab.c" /* yacc.c:1646  */
+#line 186 "source.y" /* yacc.c:1646  */
+    { ajouter((yyvsp[-2].var)); }
+#line 1455 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 106 "source.y" /* yacc.c:1646  */
-    {add_symbol((yyvsp[-4].var),0); write_instruction2(COD_AFC,find_symbol((yyvsp[-4].var)),(yyvsp[-2].nb));}
-#line 1410 "y.tab.c" /* yacc.c:1646  */
+#line 187 "source.y" /* yacc.c:1646  */
+    { ajouter((yyvsp[-2].var)); }
+#line 1461 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 17:
-#line 112 "source.y" /* yacc.c:1646  */
-    {printf("ICI\n") ;int index =find_symbol((yyvsp[-4].var)); write_instruction2(COD_AFC,index,(yyvsp[-2].nb)); }
-#line 1416 "y.tab.c" /* yacc.c:1646  */
+  case 16:
+#line 188 "source.y" /* yacc.c:1646  */
+    { ajouter((yyvsp[-4].var)); write_instruction2(COD_AFC,trouver((yyvsp[-4].var)),(yyvsp[-2].nb)); }
+#line 1467 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 18:
+#line 193 "source.y" /* yacc.c:1646  */
+    { write_instruction2(COD_COP,trouver((yyvsp[-4].var)),(yyvsp[-2].nb)); depile_tmp(); }
+#line 1473 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 20:
-#line 118 "source.y" /* yacc.c:1646  */
-    { (yyval.nb) = 0; }
-#line 1422 "y.tab.c" /* yacc.c:1646  */
+#line 198 "source.y" /* yacc.c:1646  */
+    { /*fprintf(inputFile,"tNB\n");*/ int addr_tmp = empile_tmp(); (yyval.nb) = addr_tmp; write_instruction2(COD_AFC,addr_tmp,(yyvsp[0].nb)); }
+#line 1479 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 119 "source.y" /* yacc.c:1646  */
-    { (yyval.nb) = 0; }
-#line 1428 "y.tab.c" /* yacc.c:1646  */
+#line 199 "source.y" /* yacc.c:1646  */
+    { /*fprintf(inputFile,"tREAL\n");*/ int addr_tmp = empile_tmp(); (yyval.nb) = addr_tmp; write_instruction2(COD_AFC,addr_tmp,3.14); }
+#line 1485 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 120 "source.y" /* yacc.c:1646  */
-    { (yyval.nb)=find_symbol((yyvsp[0].var));}
-#line 1434 "y.tab.c" /* yacc.c:1646  */
+#line 200 "source.y" /* yacc.c:1646  */
+    { /*fprintf(inputFile,"tVAR\n");*/ int addr_tmp = empile_tmp(); (yyval.nb) = addr_tmp; write_instruction2(COD_COP,addr_tmp,trouver((yyvsp[0].var))); }
+#line 1491 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 23:
-#line 121 "source.y" /* yacc.c:1646  */
+#line 201 "source.y" /* yacc.c:1646  */
     { (yyval.nb) = (yyvsp[-1].nb); }
-#line 1440 "y.tab.c" /* yacc.c:1646  */
+#line 1497 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 122 "source.y" /* yacc.c:1646  */
-    { write_instruction3((yyvsp[-1].nb), (yyval.nb), (yyvsp[-2].nb), (yyvsp[0].nb)); }
-#line 1446 "y.tab.c" /* yacc.c:1646  */
+#line 202 "source.y" /* yacc.c:1646  */
+    { (yyval.nb) = (yyvsp[-2].nb); write_instruction3((yyvsp[-1].nb), (yyvsp[-2].nb), (yyvsp[-2].nb), (yyvsp[0].nb)); depile_tmp(); }
+#line 1503 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 123 "source.y" /* yacc.c:1646  */
-    { write_instruction3(0, (yyval.nb),  0, (yyvsp[0].nb)); }
-#line 1452 "y.tab.c" /* yacc.c:1646  */
+#line 203 "source.y" /* yacc.c:1646  */
+    { write_instruction3(COD_SUB, (yyvsp[0].nb), 0, (yyvsp[0].nb)); }
+#line 1509 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 126 "source.y" /* yacc.c:1646  */
-    {(yyval.nb)=COD_ADD;}
-#line 1458 "y.tab.c" /* yacc.c:1646  */
+#line 207 "source.y" /* yacc.c:1646  */
+    { (yyval.nb)=COD_ADD; }
+#line 1515 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 27:
-#line 127 "source.y" /* yacc.c:1646  */
-    {(yyval.nb)=COD_SUB;}
-#line 1464 "y.tab.c" /* yacc.c:1646  */
+#line 208 "source.y" /* yacc.c:1646  */
+    { (yyval.nb)=COD_SUB; }
+#line 1521 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 28:
-#line 128 "source.y" /* yacc.c:1646  */
-    {(yyval.nb)=COD_MUL;}
-#line 1470 "y.tab.c" /* yacc.c:1646  */
+#line 209 "source.y" /* yacc.c:1646  */
+    { (yyval.nb)=COD_MUL; }
+#line 1527 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 29:
-#line 129 "source.y" /* yacc.c:1646  */
-    {(yyval.nb)=COD_DIV;}
-#line 1476 "y.tab.c" /* yacc.c:1646  */
+#line 210 "source.y" /* yacc.c:1646  */
+    { (yyval.nb)=COD_DIV; }
+#line 1533 "y.tab.c" /* yacc.c:1646  */
     break;
 
 
-#line 1480 "y.tab.c" /* yacc.c:1646  */
+#line 1537 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1704,18 +1761,95 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 137 "source.y" /* yacc.c:1906  */
+#line 219 "source.y" /* yacc.c:1906  */
 
 int main(){
     printf("Début\n");
-    malloc_easy();
-    inputFile= fopen( "asm.txt", "w" );
+    Liste* tabSymbol = initialise();
+
+    inputFile = fopen( "asm.txt", "w" );
     if ( inputFile == NULL ) {
         printf( "Cannot open file %s\n", "ASM" );
         exit( 0 );
     }
+
+    /*printf("ajouter titi: %d\n",ajouter( "titi"));
+    printf("trouver titi: %d\n",trouver( "titi"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31: %d\n",ajouter( "totodu31"));
+    printf("trouver titi: %d\n",trouver( "titi"));
+    printf("trouver totodu31: %d\n",trouver( "totodu31"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31400: %d\n",ajouter( "totodu31400"));
+    printf("trouver totodu31400: %d\n",trouver( "totodu31400"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31: %d\n",ajouter( "totodu31"));
+    printf("trouver totodu31: %d\n",trouver( "totodu31"));
+    afficher(tabSymbol);
+    printf("ajouter totodu31400: %d\n",ajouter( "totodu31400"));
+    printf("trouver totodu31400: %d\n",trouver( "totodu31400"));
+    afficher(tabSymbol);
+    supprime(tabSymbol);*/
+
     yyparse();
-    fclose( inputFile );
+    fclose(inputFile);
+
+    printf("\nmemoire libérée\n");
     printf("FIN\n");
     return 0;
 }
+/*
+C:
+int a = 5;
+int b = 6;
+int c = 7;
+a = (b-c)*(a+b);
+
+
+NOUS:
+[a,,,,,]
+AFC @a 5 -> 6 0 5
+[a,b,,,,]
+AFC @b 6 -> 6 1 6
+[a,b,c,,,]
+AFC @c 7 -> 6 2 7
+[a,b,c,,,tmp1]
+SUB @tmp1 @b @c -> 3 6 1 2
+[a,b,c,,tmp2,tmp1]
+ADD @tmp2 @a @b -> 1 5 0 1
+[a,b,c,@tmp3,tmp2,tmp1]
+MUL @tmp3 @tmp1 @tmp2 -> 2 4 6 5
+COP @tmp3 @a -> 5 4 0
+[a,b,c,,,]
+
+
+
+
+C:
+int a = 5;
+a = a + 8;
+
+
+NOUS:
+[a,,,,,]
+AFC @a 5 -> 6 0 5
+[a,,,,,8]
+index_pile = 1
+ADD @tmp @a @8 -> 1 5 0 6
+[a,,,,tmp,8]
+COP @tmp @a -> 5 5 0
+[a,,,,,]
+
+
+
+8 + b + c
+
+tNB tPLUS tVAR tPLUS tVAR
+
+|      |
+\_____/
+
+Sachant EXPRESSION -> tNB {actionNB}
+Alors, nous executons actionNB
+Hypothèse : pas de modif. de la pile
+*/

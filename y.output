@@ -30,14 +30,14 @@ Grammaire
    10 LVARS: %empty
    11      | tVIRG tVAR LVARS
 
-   12 DECLARATION: TYPE tVAR tPTvirg DECLARATION
-   13            | tCONST TYPE tVAR tPTvirg DECLARATION
-   14            | TYPE tVAR tEQ VAL tPTvirg DECLARATION
-   15            | %empty
+   12 DECLARATION: %empty
+   13            | TYPE tVAR tPTvirg DECLARATION
+   14            | tCONST TYPE tVAR tPTvirg DECLARATION
+   15            | TYPE tVAR tEQ VAL tPTvirg DECLARATION
 
-   16 INSTRUCT: tVAR tEQ EXPRESSION tPTvirg INSTRUCT
-   17         | tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT
-   18         | %empty
+   16 INSTRUCT: %empty
+   17         | tVAR tEQ EXPRESSION tPTvirg INSTRUCT
+   18         | tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT
 
    19 EXPRESSION: tNB
    20           | tREAL
@@ -62,28 +62,28 @@ $end (0) 0
 error (256)
 tMAIN (258) 2
 tFIN (259)
-tCONST (260) 13
+tCONST (260) 14
 tVOID (261) 6
 tINT (262) 3
 tCHAR (263) 5
 tFLOAT (264) 4
-tPRINTF (265) 17
-tEQ (266) 14 16
+tPRINTF (265) 18
+tEQ (266) 15 17
 tADD (267) 25
 tSUB (268) 24 26
 tMUL (269) 27
 tDIV (270) 28
 tVIRG (271) 11
-tPTvirg (272) 12 13 14 16 17
-tPARo (273) 2 17 22
-tPARf (274) 2 17 22
+tPTvirg (272) 13 14 15 17 18
+tPARo (273) 2 18 22
+tPARf (274) 2 18 22
 tACCo (275) 2
 tACCf (276) 2
 tNULL (277)
 tREAL (278) 20 30
 tNOM (279)
 tNB (280) 19 29
-tVAR (281) 9 11 12 13 14 16 21 31
+tVAR (281) 9 11 13 14 15 17 21 31
 tPOW (282)
 
 
@@ -96,7 +96,7 @@ S (29)
 MAIN (30)
     à gauche: 2, à droite: 1
 TYPE (31)
-    à gauche: 3 4 5 6, à droite: 2 12 13 14
+    à gauche: 3 4 5 6, à droite: 2 13 14 15
 BODY (32)
     à gauche: 7, à droite: 2
 VARS (33)
@@ -104,15 +104,15 @@ VARS (33)
 LVARS (34)
     à gauche: 10 11, à droite: 9 11
 DECLARATION (35)
-    à gauche: 12 13 14 15, à droite: 7 12 13 14
+    à gauche: 12 13 14 15, à droite: 7 13 14 15
 INSTRUCT (36)
-    à gauche: 16 17 18, à droite: 7 16 17
+    à gauche: 16 17 18, à droite: 7 17 18
 EXPRESSION (37)
-    à gauche: 19 20 21 22 23 24, à droite: 16 17 22 23 24
+    à gauche: 19 20 21 22 23 24, à droite: 17 18 22 23 24
 OPE (38)
     à gauche: 25 26 27 28, à droite: 23
 VAL (39)
-    à gauche: 29 30 31, à droite: 14
+    à gauche: 29 30 31, à droite: 15
 
 
 État 0
@@ -263,7 +263,7 @@ VAL (39)
     tCHAR   décalage et aller à l'état 3
     tFLOAT  décalage et aller à l'état 4
 
-    $défaut  réduction par utilisation de la règle 15 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 12 (DECLARATION)
 
     TYPE         aller à l'état 20
     BODY         aller à l'état 21
@@ -279,7 +279,7 @@ VAL (39)
 
 État 19
 
-   13 DECLARATION: tCONST . TYPE tVAR tPTvirg DECLARATION
+   14 DECLARATION: tCONST . TYPE tVAR tPTvirg DECLARATION
 
     tVOID   décalage et aller à l'état 1
     tINT    décalage et aller à l'état 2
@@ -291,8 +291,8 @@ VAL (39)
 
 État 20
 
-   12 DECLARATION: TYPE . tVAR tPTvirg DECLARATION
-   14            | TYPE . tVAR tEQ VAL tPTvirg DECLARATION
+   13 DECLARATION: TYPE . tVAR tPTvirg DECLARATION
+   15            | TYPE . tVAR tEQ VAL tPTvirg DECLARATION
 
     tVAR  décalage et aller à l'état 24
 
@@ -311,22 +311,22 @@ VAL (39)
     tPRINTF  décalage et aller à l'état 26
     tVAR     décalage et aller à l'état 27
 
-    $défaut  réduction par utilisation de la règle 18 (INSTRUCT)
+    $défaut  réduction par utilisation de la règle 16 (INSTRUCT)
 
     INSTRUCT  aller à l'état 28
 
 
 État 23
 
-   13 DECLARATION: tCONST TYPE . tVAR tPTvirg DECLARATION
+   14 DECLARATION: tCONST TYPE . tVAR tPTvirg DECLARATION
 
     tVAR  décalage et aller à l'état 29
 
 
 État 24
 
-   12 DECLARATION: TYPE tVAR . tPTvirg DECLARATION
-   14            | TYPE tVAR . tEQ VAL tPTvirg DECLARATION
+   13 DECLARATION: TYPE tVAR . tPTvirg DECLARATION
+   15            | TYPE tVAR . tEQ VAL tPTvirg DECLARATION
 
     tEQ      décalage et aller à l'état 30
     tPTvirg  décalage et aller à l'état 31
@@ -341,14 +341,14 @@ VAL (39)
 
 État 26
 
-   17 INSTRUCT: tPRINTF . tPARo EXPRESSION tPARf tPTvirg INSTRUCT
+   18 INSTRUCT: tPRINTF . tPARo EXPRESSION tPARf tPTvirg INSTRUCT
 
     tPARo  décalage et aller à l'état 32
 
 
 État 27
 
-   16 INSTRUCT: tVAR . tEQ EXPRESSION tPTvirg INSTRUCT
+   17 INSTRUCT: tVAR . tEQ EXPRESSION tPTvirg INSTRUCT
 
     tEQ  décalage et aller à l'état 33
 
@@ -362,14 +362,14 @@ VAL (39)
 
 État 29
 
-   13 DECLARATION: tCONST TYPE tVAR . tPTvirg DECLARATION
+   14 DECLARATION: tCONST TYPE tVAR . tPTvirg DECLARATION
 
     tPTvirg  décalage et aller à l'état 34
 
 
 État 30
 
-   14 DECLARATION: TYPE tVAR tEQ . VAL tPTvirg DECLARATION
+   15 DECLARATION: TYPE tVAR tEQ . VAL tPTvirg DECLARATION
 
     tREAL  décalage et aller à l'état 35
     tNB    décalage et aller à l'état 36
@@ -380,7 +380,7 @@ VAL (39)
 
 État 31
 
-   12 DECLARATION: TYPE tVAR tPTvirg . DECLARATION
+   13 DECLARATION: TYPE tVAR tPTvirg . DECLARATION
 
     tCONST  décalage et aller à l'état 19
     tVOID   décalage et aller à l'état 1
@@ -388,7 +388,7 @@ VAL (39)
     tCHAR   décalage et aller à l'état 3
     tFLOAT  décalage et aller à l'état 4
 
-    $défaut  réduction par utilisation de la règle 15 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 12 (DECLARATION)
 
     TYPE         aller à l'état 20
     DECLARATION  aller à l'état 39
@@ -396,7 +396,7 @@ VAL (39)
 
 État 32
 
-   17 INSTRUCT: tPRINTF tPARo . EXPRESSION tPARf tPTvirg INSTRUCT
+   18 INSTRUCT: tPRINTF tPARo . EXPRESSION tPARf tPTvirg INSTRUCT
 
     tSUB   décalage et aller à l'état 40
     tPARo  décalage et aller à l'état 41
@@ -409,7 +409,7 @@ VAL (39)
 
 État 33
 
-   16 INSTRUCT: tVAR tEQ . EXPRESSION tPTvirg INSTRUCT
+   17 INSTRUCT: tVAR tEQ . EXPRESSION tPTvirg INSTRUCT
 
     tSUB   décalage et aller à l'état 40
     tPARo  décalage et aller à l'état 41
@@ -422,7 +422,7 @@ VAL (39)
 
 État 34
 
-   13 DECLARATION: tCONST TYPE tVAR tPTvirg . DECLARATION
+   14 DECLARATION: tCONST TYPE tVAR tPTvirg . DECLARATION
 
     tCONST  décalage et aller à l'état 19
     tVOID   décalage et aller à l'état 1
@@ -430,7 +430,7 @@ VAL (39)
     tCHAR   décalage et aller à l'état 3
     tFLOAT  décalage et aller à l'état 4
 
-    $défaut  réduction par utilisation de la règle 15 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 12 (DECLARATION)
 
     TYPE         aller à l'état 20
     DECLARATION  aller à l'état 47
@@ -459,16 +459,16 @@ VAL (39)
 
 État 38
 
-   14 DECLARATION: TYPE tVAR tEQ VAL . tPTvirg DECLARATION
+   15 DECLARATION: TYPE tVAR tEQ VAL . tPTvirg DECLARATION
 
     tPTvirg  décalage et aller à l'état 48
 
 
 État 39
 
-   12 DECLARATION: TYPE tVAR tPTvirg DECLARATION .
+   13 DECLARATION: TYPE tVAR tPTvirg DECLARATION .
 
-    $défaut  réduction par utilisation de la règle 12 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 13 (DECLARATION)
 
 
 État 40
@@ -520,7 +520,7 @@ VAL (39)
 
 État 45
 
-   17 INSTRUCT: tPRINTF tPARo EXPRESSION . tPARf tPTvirg INSTRUCT
+   18 INSTRUCT: tPRINTF tPARo EXPRESSION . tPARf tPTvirg INSTRUCT
    23 EXPRESSION: EXPRESSION . OPE EXPRESSION
 
     tADD   décalage et aller à l'état 51
@@ -534,7 +534,7 @@ VAL (39)
 
 État 46
 
-   16 INSTRUCT: tVAR tEQ EXPRESSION . tPTvirg INSTRUCT
+   17 INSTRUCT: tVAR tEQ EXPRESSION . tPTvirg INSTRUCT
    23 EXPRESSION: EXPRESSION . OPE EXPRESSION
 
     tADD     décalage et aller à l'état 51
@@ -548,14 +548,14 @@ VAL (39)
 
 État 47
 
-   13 DECLARATION: tCONST TYPE tVAR tPTvirg DECLARATION .
+   14 DECLARATION: tCONST TYPE tVAR tPTvirg DECLARATION .
 
-    $défaut  réduction par utilisation de la règle 13 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 14 (DECLARATION)
 
 
 État 48
 
-   14 DECLARATION: TYPE tVAR tEQ VAL tPTvirg . DECLARATION
+   15 DECLARATION: TYPE tVAR tEQ VAL tPTvirg . DECLARATION
 
     tCONST  décalage et aller à l'état 19
     tVOID   décalage et aller à l'état 1
@@ -563,7 +563,7 @@ VAL (39)
     tCHAR   décalage et aller à l'état 3
     tFLOAT  décalage et aller à l'état 4
 
-    $défaut  réduction par utilisation de la règle 15 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 12 (DECLARATION)
 
     TYPE         aller à l'état 20
     DECLARATION  aller à l'état 58
@@ -623,7 +623,7 @@ VAL (39)
 
 État 55
 
-   17 INSTRUCT: tPRINTF tPARo EXPRESSION tPARf . tPTvirg INSTRUCT
+   18 INSTRUCT: tPRINTF tPARo EXPRESSION tPARf . tPTvirg INSTRUCT
 
     tPTvirg  décalage et aller à l'état 60
 
@@ -643,21 +643,21 @@ VAL (39)
 
 État 57
 
-   16 INSTRUCT: tVAR tEQ EXPRESSION tPTvirg . INSTRUCT
+   17 INSTRUCT: tVAR tEQ EXPRESSION tPTvirg . INSTRUCT
 
     tPRINTF  décalage et aller à l'état 26
     tVAR     décalage et aller à l'état 27
 
-    $défaut  réduction par utilisation de la règle 18 (INSTRUCT)
+    $défaut  réduction par utilisation de la règle 16 (INSTRUCT)
 
     INSTRUCT  aller à l'état 62
 
 
 État 58
 
-   14 DECLARATION: TYPE tVAR tEQ VAL tPTvirg DECLARATION .
+   15 DECLARATION: TYPE tVAR tEQ VAL tPTvirg DECLARATION .
 
-    $défaut  réduction par utilisation de la règle 14 (DECLARATION)
+    $défaut  réduction par utilisation de la règle 15 (DECLARATION)
 
 
 État 59
@@ -669,12 +669,12 @@ VAL (39)
 
 État 60
 
-   17 INSTRUCT: tPRINTF tPARo EXPRESSION tPARf tPTvirg . INSTRUCT
+   18 INSTRUCT: tPRINTF tPARo EXPRESSION tPARf tPTvirg . INSTRUCT
 
     tPRINTF  décalage et aller à l'état 26
     tVAR     décalage et aller à l'état 27
 
-    $défaut  réduction par utilisation de la règle 18 (INSTRUCT)
+    $défaut  réduction par utilisation de la règle 16 (INSTRUCT)
 
     INSTRUCT  aller à l'état 63
 
@@ -700,13 +700,13 @@ VAL (39)
 
 État 62
 
-   16 INSTRUCT: tVAR tEQ EXPRESSION tPTvirg INSTRUCT .
+   17 INSTRUCT: tVAR tEQ EXPRESSION tPTvirg INSTRUCT .
 
-    $défaut  réduction par utilisation de la règle 16 (INSTRUCT)
+    $défaut  réduction par utilisation de la règle 17 (INSTRUCT)
 
 
 État 63
 
-   17 INSTRUCT: tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT .
+   18 INSTRUCT: tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT .
 
-    $défaut  réduction par utilisation de la règle 17 (INSTRUCT)
+    $défaut  réduction par utilisation de la règle 18 (INSTRUCT)

@@ -29,4 +29,3 @@ int trouver(Liste* liste, char* nvNom);
 
 
 void afficher(Liste* liste);
-

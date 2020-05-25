@@ -830,12 +830,12 @@ YY_RULE_SETUP
 case 14:
 YY_RULE_SETUP
 #line 18 "source.l"
-{printf("tNB");yylval.nb=atof(yytext) ; return(tNB);}
+{printf("tNB");   yylval.nb=atof(yytext); return(tNB);}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
 #line 19 "source.l"
-{printf("tREAL");yylval.nb=atof(yytext); return(tREAL);}
+{printf("tREAL"); yylval.nb=atof(yytext); return(tREAL);}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP

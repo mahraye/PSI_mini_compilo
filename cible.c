@@ -1,4 +1,5 @@
 int main(){
-      int a=2;
-      a = a+5;
+      int j=2;
+      int r;
+      r=(j+j)*(j+j/j);
 }
