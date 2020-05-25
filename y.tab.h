@@ -66,10 +66,11 @@ extern int yydebug;
     tACCf = 276,
     tNULL = 277,
     tREAL = 278,
-    tNOM = 279,
-    tNB = 280,
-    tVAR = 281,
-    tPOW = 282
+    tEXPO = 279,
+    tNOM = 280,
+    tNB = 281,
+    tVAR = 282,
+    tPOW = 283
   };
 #endif
 /* Tokens.  */
@@ -94,20 +95,21 @@ extern int yydebug;
 #define tACCf 276
 #define tNULL 277
 #define tREAL 278
-#define tNOM 279
-#define tNB 280
-#define tVAR 281
-#define tPOW 282
+#define tEXPO 279
+#define tNOM 280
+#define tNB 281
+#define tVAR 282
+#define tPOW 283
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 
 union YYSTYPE
 {
-#line 154 "source.y" /* yacc.c:1909  */
+#line 242 "source.y" /* yacc.c:1909  */
 int nb; char var [32];
 
-#line 111 "y.tab.h" /* yacc.c:1909  */
+#line 113 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

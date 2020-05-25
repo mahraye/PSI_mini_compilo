@@ -29,6 +29,7 @@
 
 
     Liste* tabSymbol;
+    Liste* bufferSymbol; //pour les declarations a virgule
     FILE * inputFile;
     int index_pile = 0;
 
@@ -39,6 +40,41 @@
     int COD_DIV = 4;
     int COD_COP = 5;
     int COD_AFC = 6;
+    int COD_JMP = 7;
+    int COD_JMF = 8;
+    int COD_INF = 9;
+    int COD_SUP = 10;
+    int COD_EQU = 11;
+    int COD_PRI = 12;
+
+    // Fonctions utiles
+
+    void write_instruction1(int ope_cod, int num){
+      // jmp; pri
+      if (ope_cod<10){
+        fprintf(inputFile,"%d %d\n", ope_cod, num);
+      } else {
+        fprintf(inputFile,"%c %d\n", 55+ope_cod, num);
+      }
+
+    }
+    void write_instruction2(int ope_cod, int ret, int op1){
+      // cop; afc; jmf
+      if (ope_cod<10){
+        fprintf(inputFile,"%d %d %d\n", ope_cod, ret, op1);
+      } else {
+        fprintf(inputFile,"%c %d %d\n", 55+ope_cod, ret, op1);
+      }
+    }
+    void write_instruction3(int ope_cod, int ret, int op1, int op2){
+      // add; sub; mul; div; inf; sup; equ
+      if (ope_cod<10){
+    	  fprintf(inputFile,"%d %d %d %d\n", ope_cod, ret, op1, op2);
+      } else {
+        fprintf(inputFile,"%c %d %d %d\n", 55+ope_cod, ret, op1, op2);
+      }
+    }
+
 
     Liste* initialise() {
         tabSymbol = malloc(sizeof(Liste));
@@ -58,8 +94,7 @@
         if (tabSymbol == NULL) {
             exit(EXIT_FAILURE);
         }
-        if (tabSymbol->premiere != NULL)
-        {
+        while (tabSymbol->premiere != NULL) {
             Cellule* bientotPlusLa = tabSymbol->premiere;
             tabSymbol->premiere = tabSymbol->premiere->suivante;
             free(bientotPlusLa);
@@ -67,7 +102,7 @@
     }
 
 
-    int ajouter(char* nvNom) {
+    int ajoute(char* nvNom) {
         Cellule* nouvelle = malloc(sizeof(*nouvelle));
         if (tabSymbol == NULL || nouvelle == NULL) {
             exit(EXIT_FAILURE);
@@ -99,7 +134,7 @@
     }
 
 
-    int trouver(char* nvNom) {
+    int trouve(char* nvNom) {
         //afficher();
         int compteur = 0;
         int arg = -1;
@@ -126,6 +161,70 @@
         fprintf(inputFile,"NULL\n");
     }
 
+    void afficherBuffer() {
+        if (bufferSymbol == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        Cellule* actuelle = bufferSymbol->premiere;
+        while (actuelle != NULL) {
+            fprintf(inputFile,"%s -> ", actuelle->nom);
+            actuelle = actuelle->suivante;
+        }
+        fprintf(inputFile,"NULL\n");
+    }
+
+    Liste* initialiseBuffer() {
+        bufferSymbol = malloc(sizeof(Liste));
+        Cellule* cellule = malloc(sizeof(Cellule));
+        if (bufferSymbol == NULL || cellule == NULL)  {
+            exit(EXIT_FAILURE);
+        }
+        cellule->nom = malloc(strlen(DEBUT)+1);
+        strncpy(cellule->nom, DEBUT, strlen(DEBUT));
+        cellule->suivante = NULL;
+        bufferSymbol->premiere = cellule;
+        return bufferSymbol;
+    }
+
+    void ecritBuffer(int val) {
+        afficherBuffer();
+        if (bufferSymbol == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        while (bufferSymbol->premiere != NULL) {
+            Cellule* bientotPlusLa = bufferSymbol->premiere;
+            if (strcmp(bientotPlusLa->nom,DEBUT)!=0)
+                fprintf(inputFile,"AFC %d %d\n", trouve(bientotPlusLa->nom), val);
+            bufferSymbol->premiere = bufferSymbol->premiere->suivante;
+            free(bientotPlusLa);
+        }
+    }
+
+    void stocke(char* nvNom) {
+        afficherBuffer();
+        Cellule* nouvelle = malloc(sizeof(*nouvelle));
+        if (bufferSymbol == NULL || nouvelle == NULL) {
+            exit(EXIT_FAILURE);
+        }
+        nouvelle->nom = malloc(strlen(nvNom)+1);
+        strncpy(nouvelle->nom, nvNom, strlen(nvNom));
+
+        Cellule* actuelle = bufferSymbol->premiere;
+        int found = 0;
+        while (!found && actuelle->suivante != NULL) {
+        	if (strcmp(nvNom, actuelle->nom)==0) {
+        		found = 1;
+        		break;
+        	}
+            actuelle = actuelle->suivante;
+        }
+        if(!found && strcmp(nvNom, actuelle->nom)!=0) {
+    	    actuelle->suivante = nouvelle;
+    	    nouvelle->suivante = NULL;
+        }
+    }
+
+
 
     int empile_tmp(){
       index_pile++;
@@ -137,25 +236,14 @@
       return SIZE-index_pile;
     }
 
-    void write_instruction1(int ope_cod, int num){
-      // jmp; pri
-      fprintf(inputFile,"%d %d\n", ope_cod, num);
-    }
-    void write_instruction2(int ope_cod, int ret, int op1){
-      // cop; afc; jmf
-      fprintf(inputFile,"%d %d %d\n", ope_cod, ret,op1);
-    }
-    void write_instruction3(int ope_cod, int ret, int op1, int op2){
-      // add; sub; mul; div; inf; sup; equ
-    	fprintf(inputFile,"%d %d %d %d\n", ope_cod, ret,op1, op2);
-    }
+
 
 %}
 %union        {int nb; char var [32];};
-%token        tMAIN tFIN tCONST tVOID tINT tCHAR tFLOAT tPRINTF tEQ tADD tSUB tMUL tDIV tVIRG tPTvirg tPARo tPARf tACCo tACCf tNULL tREAL tNOM
-%token        <nb>  tNB
+%token        tMAIN tFIN tCONST tVOID tINT tCHAR tFLOAT tPRINTF tEQ tADD tSUB tMUL tDIV tVIRG tPTvirg tPARo tPARf tACCo tACCf tNULL tREAL tEXPO tNOM
+%token        <nb>  tNB tEXPO
 %token        <var> tVAR
-%type         <nb> EXPRESSION OPE DECLARATION VAL INSTRUCT VARS LVARS
+%type         <nb> EXPRESSION OPE DECLARATION VAL INSTRUCT LVAR LVARS DVAR DVARS
 
 %left tADD tSUB
 %left tDIV tMUL
@@ -164,7 +252,7 @@
 
 %%
 S: MAIN;
-MAIN: TYPE tMAIN tPARo VARS tPARf tACCo BODY tACCf { fprintf(inputFile,"main"); } ;
+MAIN: TYPE tMAIN tPARo LVAR tPARf tACCo BODY tACCf { fprintf(inputFile,"main"); } ;
 TYPE:
         tINT
     |   tFLOAT
@@ -172,7 +260,7 @@ TYPE:
     |   tVOID
     ;
 BODY: DECLARATION INSTRUCT ;
-VARS:
+LVAR:
 
     |   tVAR LVARS
     ;
@@ -183,21 +271,48 @@ LVARS:
 
 DECLARATION:
 
-    |   TYPE tVAR tPTvirg DECLARATION            { ajouter($2); }
-    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajouter($3); }
-    |   TYPE tVAR tEQ VAL tPTvirg DECLARATION    { ajouter($2); write_instruction2(COD_AFC,trouver($2),$4); } /*remplacer val par expression?*/
+    |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2); }
+    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3); }
+    |   TYPE tVAR tEQ VAL tPTvirg DECLARATION    { ajoute($2); write_instruction2(COD_AFC,trouve($2),$4); }
     ;
+    //|    ASSIGNATION DECLARATION
+    //;
+
+/*DECLARATIONS:
+
+    |  DECLARATION DECLARATIONS
+    ;
+
+DECLARATION:
+    AVECASSIGNATION
+    | SANSASSIGNATION
+    ;
+SANSASSIGNATION:
+    |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2); }
+    |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3); }
+    ;
+
+AVECASSIGNATION: TYPE DVARS tEQ VAL tPTvirg { ecritBuffer($4); };
+
+DVARS:
+    tVAR                      { ajoute($1); stocke($1); }
+    | tVAR tVIRG DVARS        { ajoute($1); stocke($1); }
+    ;*/
 
 INSTRUCT:
 
-    |   tVAR tEQ EXPRESSION tPTvirg INSTRUCT             { write_instruction2(COD_COP,trouver($1),$3); depile_tmp(); }
+    |   tVAR tEQ EXPRESSION tPTvirg INSTRUCT             { write_instruction2(COD_COP,trouve($1),$3); depile_tmp(); }
     |   tPRINTF tPARo EXPRESSION tPARf tPTvirg INSTRUCT
+    |   PRINT INSTRUCT
     ;
+
+PRINT: tPRINTF tPARo tVAR tPARf tPTvirg  { write_instruction1(COD_PRI,trouve($3)); } ;
 
 EXPRESSION:
         tNB                        { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_AFC,addr_tmp,$1); }
-    |   tREAL                      { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_AFC,addr_tmp,3.14); } /*chantier*/
-    |   tVAR                       { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_COP,addr_tmp,trouver($1)); }
+    |   tEXPO                      { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_AFC,addr_tmp,$1); }
+    |   tREAL                      { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_AFC,addr_tmp, 1); }
+    |   tVAR                       { int addr_tmp = empile_tmp(); $$ = addr_tmp; write_instruction2(COD_COP,addr_tmp,trouve($1)); }
     |   tPARo EXPRESSION tPARf     { $$ = $2; }
     |   EXPRESSION OPE EXPRESSION  { $$ = $1; write_instruction3($2, $1, $1, $3); depile_tmp(); } /*liberation de l'adresse*/
     |   tSUB EXPRESSION %prec tMUL { write_instruction3(COD_SUB, $2, 0, $2); }        /*pas sur du tout : pas de depilage ?*/
@@ -213,6 +328,7 @@ OPE:
 VAL:
         tNB
     |   tREAL
+    |   tEXPO
     |   tVAR
     ;
 
@@ -220,6 +336,7 @@ VAL:
 int main(){
     printf("Début\n");
     Liste* tabSymbol = initialise();
+    Liste* bufferSymbol = initialiseBuffer();
 
     inputFile = fopen( "asm.txt", "w" );
     if ( inputFile == NULL ) {
@@ -227,21 +344,21 @@ int main(){
         exit( 0 );
     }
 
-    /*printf("ajouter titi: %d\n",ajouter( "titi"));
-    printf("trouver titi: %d\n",trouver( "titi"));
+    /*printf("ajoute titi: %d\n",ajoute( "titi"));
+    printf("trouve titi: %d\n",trouve( "titi"));
     afficher(tabSymbol);
-    printf("ajouter totodu31: %d\n",ajouter( "totodu31"));
-    printf("trouver titi: %d\n",trouver( "titi"));
-    printf("trouver totodu31: %d\n",trouver( "totodu31"));
+    printf("ajoute totodu31: %d\n",ajoute( "totodu31"));
+    printf("trouve titi: %d\n",trouve( "titi"));
+    printf("trouve totodu31: %d\n",trouve( "totodu31"));
     afficher(tabSymbol);
-    printf("ajouter totodu31400: %d\n",ajouter( "totodu31400"));
-    printf("trouver totodu31400: %d\n",trouver( "totodu31400"));
+    printf("ajoute totodu31400: %d\n",ajoute( "totodu31400"));
+    printf("trouve totodu31400: %d\n",trouve( "totodu31400"));
     afficher(tabSymbol);
-    printf("ajouter totodu31: %d\n",ajouter( "totodu31"));
-    printf("trouver totodu31: %d\n",trouver( "totodu31"));
+    printf("ajoute totodu31: %d\n",ajoute( "totodu31"));
+    printf("trouve totodu31: %d\n",trouve( "totodu31"));
     afficher(tabSymbol);
-    printf("ajouter totodu31400: %d\n",ajouter( "totodu31400"));
-    printf("trouver totodu31400: %d\n",trouver( "totodu31400"));
+    printf("ajoute totodu31400: %d\n",ajoute( "totodu31400"));
+    printf("trouve totodu31400: %d\n",trouve( "totodu31400"));
     afficher(tabSymbol);
     supprime(tabSymbol);*/
 

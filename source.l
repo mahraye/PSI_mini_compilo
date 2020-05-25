@@ -17,6 +17,7 @@
 "-"                                      		                      {printf("tSUB");return(tSUB);}
 [0-9]*                                   		                      {printf("tNB");   yylval.nb=atof(yytext); return(tNB);}
 [0-9]*("."[0-9]*)                        		                      {printf("tREAL"); yylval.nb=atof(yytext); return(tREAL);}
+[0-9]+"e"[+-]?[0-9]                                               {printf("tEXP");  yylval.nb=atof(yytext); return(tEXPO);}
 "*"                                      		                      {printf("tMUL");return(tMUL);}
 "^"                                      		                      {printf("tPOW");return(tPOW);}
 "/"                                      		                      {printf("tDIV");return(tDIV);}
