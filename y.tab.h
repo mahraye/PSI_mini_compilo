@@ -68,9 +68,10 @@ extern int yydebug;
     tREAL = 278,
     tEXPO = 279,
     tNOM = 280,
-    tNB = 281,
-    tVAR = 282,
-    tPOW = 283
+    tVIRGULE = 281,
+    tNB = 282,
+    tVAR = 283,
+    tPOW = 284
   };
 #endif
 /* Tokens.  */
@@ -97,9 +98,10 @@ extern int yydebug;
 #define tREAL 278
 #define tEXPO 279
 #define tNOM 280
-#define tNB 281
-#define tVAR 282
-#define tPOW 283
+#define tVIRGULE 281
+#define tNB 282
+#define tVAR 283
+#define tPOW 284
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -109,7 +111,7 @@ union YYSTYPE
 #line 259 "source.y" /* yacc.c:1909  */
 int nb; char var [32];
 
-#line 113 "y.tab.h" /* yacc.c:1909  */
+#line 115 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

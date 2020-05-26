@@ -257,7 +257,7 @@
 
 %}
 %union        {int nb; char var [32];};
-%token        tMAIN tFIN tCONST tVOID tINT tCHAR tFLOAT tPRINTF tEQ tADD tSUB tMUL tDIV tVIRG tPTvirg tPARo tPARf tACCo tACCf tNULL tREAL tEXPO tNOM
+%token        tMAIN tFIN tCONST tVOID tINT tCHAR tFLOAT tPRINTF tEQ tADD tSUB tMUL tDIV tVIRG tPTvirg tPARo tPARf tACCo tACCf tNULL tREAL tEXPO tNOM tVIRGULE
 %token        <nb>  tNB tEXPO
 %token        <var> tVAR
 %type         <nb> EXPRESSION OPE DECLARATION VAL INSTRUCT LVAR LVARS DVAR DVARS
@@ -291,6 +291,11 @@ DECLARATION:
     |   TYPE tVAR tPTvirg DECLARATION            { ajoute($2,0); }
     |   tCONST TYPE tVAR tPTvirg DECLARATION     { ajoute($3,1); }
     |   TYPE tVAR tEQ VAL tPTvirg DECLARATION    { ajoute($2,0); write_instruction2(COD_AFC,trouve($2),$4); }
+    |   TYPE tVAR tVIRGULE SuiteVar {ajoute($2,0);}
+    ;
+
+SuiteVar: tVAR tVIRGULE SuiteVar {ajoute($1,0);}
+    | tVAR tPTvirg {ajoute($1,0);}
     ;
   //  |    ASSIGNATION DECLARATION
   //  ;
